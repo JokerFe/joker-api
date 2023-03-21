@@ -8,7 +8,7 @@ import { IContext } from "./types/base";
 import router from "./routes/index";
 import config from "./modules/config";
 const App = new Koa();
-
+import { query } from "./utils/mysql";
 App.use(staticFiles(path.resolve(__dirname, "../public/**")));
 
 App.use(async (ctx: IContext, next) => {
@@ -58,7 +58,7 @@ App.on("error", (err, ctx) => {
   console.log(`\x1B[91m server error !!!!!!!!!!!!! \x1B[0m`, err, ctx);
 });
 
-App.listen(config.port, () => {
+App.listen(config.port, async () => {
   // for (let i = 0; i < 100; i++) {
   //     console.log(`\x1B[${i}m 颜色 \x1B[0m`, i);
   // }
@@ -69,4 +69,6 @@ App.listen(config.port, () => {
   console.log(
     ` - Network: \x1B[36m http://${config.ip}:\x1B[0m\x1B[96m${config.port} \x1B[0m`
   );
+  const res = await query("select * from user_table");
+  console.log("res", res);
 });
