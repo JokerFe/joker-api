@@ -43,7 +43,7 @@ class Config {
   /** 数据库配置 */
   readonly db = {
     host: "39.106.16.187",
-    user: "test",
+    user: "root",
     password: "joker1993",
     /** 数据库名 */
     database: "user",

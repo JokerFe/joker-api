@@ -1,4 +1,4 @@
-import * as mysql from "mysql";         // learn: https://www.npmjs.com/package/mysql
+import * as mysql from "mysql2";         // learn: https://www.npmjs.com/package/mysql
 import config from "../modules/Config";
 import utils from "./index";
 import { BaseObj } from "../types/base";
@@ -10,65 +10,78 @@ interface MsqlResult<T = any> {
   /** 结果数组 或 对象 */
   results: T
   /** 状态 */
-  fields: Array<mysql.FieldInfo>
+  // fields: Array<mysql.FieldInfo>
+  fields: Array<any>
   /** 错误信息 */
-  error: mysql.MysqlError
+  error: any // mysql.MysqlError
   /** 描述信息 */
   msg: string
 }
 
 /** 数据库链接池 */
-const pool = mysql.createPool({
+// const pool = mysql.createPool({
+//   host: config.db.host,
+//   user: config.db.user,
+//   password: config.db.password,
+//   database: config.db.database
+// });
+const connection = mysql.createConnection({
   host: config.db.host,
   user: config.db.user,
   password: config.db.password,
   database: config.db.database
 });
-
 /**
  * 数据库增删改查
  * @param command 增删改查语句 [mysql语句参考](https://blog.csdn.net/gymaisyl/article/details/84777139)
  * @param value 对应的值
  */
 export function query<T = any>(command: string, value?: Array<any>) {
-  const result: MsqlResult = {
-    state: 0,
-    results: undefined,
-    fields: [],
-    error: undefined,
-    msg: ""
-  }
-  return new Promise<MsqlResult<T>>(resolve => {
-    pool.getConnection((error: any, connection) => {
-      if (error) {
-        result.error = error;
-        result.msg = "数据库连接出错";
-        resolve(result);
-      } else {
-        const callback: mysql.queryCallback = (error: any, results, fields) => {
-          // pool.end();
-          connection.release();
-          if (error) {
-            result.error = error;
-            result.msg = "数据库增删改查出错";
-            resolve(result);
-          } else {
-            result.state = 1;
-            result.msg = "ok";
-            result.results = results;
-            result.fields = fields;
-            resolve(result);
-          }
-        }
+  connection.query(
+    'SELECT * FROM user_table',
+    function(err, results, fields) {
+      console.log(results); // 结果集
+      console.log(fields); // 额外的元数据（如果有的话）
+    }
+  );
+  // const result: MsqlResult = {
+  //   state: 0,
+  //   results: undefined,
+  //   fields: [],
+  //   error: undefined,
+  //   msg: ""
+  // }
+  // return new Promise<MsqlResult<T>>(resolve => {
+  //   pool.getConnection((error: any, connection) => {
+  //     if (error) {
+  //       result.error = error;
+  //       result.msg = "数据库连接出错";
+  //       resolve(result);
+  //     } else {
+  //       const callback: mysql.queryCallback = (error: any, results, fields) => {
+  //         // pool.end();
+  //         connection.release();
+  //         if (error) {
+  //           result.error = error;
+  //           result.msg = "数据库增删改查出错";
+  //           resolve(result);
+  //         } else {
+  //           result.state = 1;
+  //           result.msg = "ok";
+  //           result.results = results;
+  //           result.fields = fields;
+  //           resolve(result);
+  //         }
+  //       }
 
-        if (value) {
-          pool.query(command, value, callback);
-        } else {
-          pool.query(command, callback);
-        }
-      }
-    });
-  });
+  //       if (value) {
+  //         pool.query(command, value, callback);
+  //       } else {
+  //         pool.query(command, callback);
+  //       }
+  //     }
+  //   });
+  // });
 }
 
 /** 获取查询语句参数 */
